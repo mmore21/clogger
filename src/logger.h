@@ -3,4 +3,6 @@
 
 char keylog();
 
+int setHook(HHOOK hook);
+
 #endif

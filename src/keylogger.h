@@ -13,6 +13,6 @@ int setupHook();
 int removeHook();
 
 // Opens log file for appending, inserts timestamp, and hides the file
-void initFile();
+void initLogFile();
 
 #endif

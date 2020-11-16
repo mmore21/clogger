@@ -32,3 +32,4 @@ clean.bat
 
 ## License
 clogger is available under the [MIT License](https://github.com/mmore21/clogger/blob/master/LICENSE).
+

